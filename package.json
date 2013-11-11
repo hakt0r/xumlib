@@ -28,7 +28,6 @@
     "url": "https://github.com/hakt0r/xumlib/issues"
   },
   "dependencies": {
-    "sudo": "~1.0.3"
   },
   "license": "GPLv3"
 }
