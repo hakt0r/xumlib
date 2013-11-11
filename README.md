@@ -1,21 +1,30 @@
 ## xumlib - shell and network utility library
 
 ### Installation
-    $ sudo npm xumlib (TODO: publish)
+    $ sudo npm xumlib
     $ sudo npm install -g git://github.com/hakt0r/xumlib.git
 
-### Node.JS Usage:
+### Usage:
     var xl = require('xumlib');
 
-    sh = xl.sh;
-    sh( "sh", [ "-c", "echo hello world" ], function(err,data){
-      console.log(data)
-    })
-
-    script = xl.script;
-    script( "echo hello world", function(err,data){
-      console.log(data)
-    })
+### Functions:
+  * sh : (cmd,args,callback)
+  * script : (cmd,callback)
+  * waitproc : (opts={})
+  * running : (name, callback)
+  * killall : (name, callback, fail)
+  * forkdm : (args,callback)
+  * readproc : (opts)
+  * send : (msg,callback)
+  * getmac : (l)
+  * ip2long : (ip)
+  * long2ip : (ip)
+  * dotmask2cidr : (mask)
+  * cidr2dotmask : (cidr)
+  * guess_ip_fromnet : (net, callback)
+  * guess_net : (ip, callback)
+  * guess_dev : (ip, callback)
+  * guess_gw : (dev)
 
 ### Copyrights
   * c) 2012-2013 Sebastian Glaser <anx@ulzq.de>
