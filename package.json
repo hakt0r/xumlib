@@ -8,7 +8,7 @@
     "url": "https://github.com/hakt0r/xumlib.git"
   },
   "main": "./index.js",
-  "scripts" : {
+  "scripts": {
     "prepublish": "coffee -bco ./ ./index.coffee"
   },
   "engines": {
@@ -17,5 +17,18 @@
   "devDependencies": {
     "coffee-script": ">= 1.3"
   },
-  "keywords": ["xumlib", "network","shell"]
+  "keywords": [
+    "xumlib",
+    "network",
+    "shell"
+  ],
+  "readmeFilename": "README.md",
+  "gitHead": "b959bef775e791790c98c008d18db6146c5f4693",
+  "bugs": {
+    "url": "https://github.com/hakt0r/xumlib/issues"
+  },
+  "dependencies": {
+    "sudo": "~1.0.3"
+  },
+  "license": "GPLv3"
 }
