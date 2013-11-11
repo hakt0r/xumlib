@@ -38,7 +38,7 @@ module.exports = Lib =
     c = cp.spawn cmd, args, {encoding:'utf8'}
     c.on 'exit', callback
 
-  script : (cmd,callback) ->
+  script : (cmd, callback) ->
     c = cp.spawn "sh", ["-c",cmd]
     c.stdout.setEncoding 'utf8'
     c.stderr.setEncoding 'utf8'
@@ -46,11 +46,23 @@ module.exports = Lib =
       c.buf = []
       c.stdout.on 'data', (d) -> c.buf.push(d)
       c.stderr.on 'data', (d) -> c.buf.push(d)
-      c.on 'close', (e) ->
-        callback(e, c.buf.join().trim())
+      c.on 'close', (e) -> callback(e, c.buf.join().trim())
     else
       c.stdout.on 'data', (d) -> console.log d
       c.stderr.on 'data', (d) -> console.log d
+    return c
+
+  scriptline : (cmd, callback) ->
+    c = cp.spawn "sh", [ "-c", cmd ], stdio : 'pipe'
+    c.stdout.setEncoding 'utf8'
+    c.stderr.setEncoding 'utf8'
+    callback.error = console.log unless callback.error
+    callback.line  = console.log unless callback.line
+    callback.end   = (->) unless callback.end
+    c.stderr.on 'data', (data) -> callback.error l.trim() for l in data.split '\n'
+    c.stdout.on 'data', (data) -> callback.line  l.trim() for l in data.split '\n'
+    c.on 'close', callback.end
+    return c
 
   waitproc : (opts={}) ->
     start = Date.now()/1000 # util.print "wait ".yellow + " for ".white + opts.name + ' '

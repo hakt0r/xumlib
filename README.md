@@ -10,6 +10,7 @@
 ### Functions:
   * sh : (cmd,args,callback)
   * script : (cmd,callback)
+  * scriptlines : (cmd,opts)
   * waitproc : (opts={})
   * running : (name, callback)
   * killall : (name, callback, fail)
