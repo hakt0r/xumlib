@@ -1,40 +1,46 @@
 ## xumlib - shell and network utility library
 
 ### Installation
-    $ sudo npm xumlib
-    $ sudo npm install -g git://github.com/hakt0r/xumlib.git
+```
+sudo npm xumlib
+sudo npm install -g git://github.com/hakt0r/xumlib.git
+```
 
 ### Usage:
-    var xl = require('xumlib');
+```javascript
+var xl = require('xumlib');
+```
 
 ### Functions:
-    * sh : (cmd, args, callback)
-    * script : (cmd, callback)
-    * scriptline : (cmd, callback)
-    * waitproc : (opts)
-    * running : (name, callback)
-    * killall : (name, callback, fail)
-    * forkdm : (args,callback)
-    * readproc : (opts)
-    * send : (msg,callback)
-    * getmac : (line)
-    * ip2long : (ip)
-    * long2ip : (ip)
-    * dot2cidr : (mask)
-    * cidr2dot : (cidr)
-    * ipAnd : (ip1, ip2)
-    * ipAdd : (ip1, ip2)
-    * ipSub : (ip1, ip2)
-    * ipInv : (ip1)
-    * netfirst : (ip)
-    * netlast : (ip)
-    * sameSubnet : (ip1, ip2, mask)
-    * guess_ip_fromnet : (net, callback)
-    * guess_net : (ip, callback)
-    * guess_dev : (ip, callback)
-    * guess_gw : (dev)
-    * devip : (dev, callback)
-    * devbcast : (dev, callback)
+```coffee
+sh : (cmd, args, callback) ->
+script : (cmd, callback) ->
+scriptline : (cmd, callback) ->
+waitproc : (opts) ->
+running : (name, callback) ->
+killall : (name, callback, fail) ->
+forkdm : (args,callback) ->
+readproc : (opts) ->
+send : (msg,callback) ->
+getmac : (line) ->
+ip2long : (ip) ->
+long2ip : (ip) ->
+dot2cidr : (mask) ->
+cidr2dot : (cidr) ->
+ipAnd : (ip1, ip2) ->
+ipAdd : (ip1, ip2) ->
+ipSub : (ip1, ip2) ->
+ipInv : (ip1) ->
+netfirst : (ip) ->
+netlast : (ip) ->
+sameSubnet : (ip1, ip2, mask) ->
+guess_ip_fromnet : (net, callback) ->
+guess_net : (ip, callback) ->
+guess_dev : (ip, callback) ->
+guess_gw : (dev) ->
+devip : (dev, callback) ->
+devbcast : (dev, callback) ->
+```
 
 ### Copyrights
   * c) 2012-2013 Sebastian Glaser <anx@ulzq.de>
