@@ -2,7 +2,7 @@
   "author": "Sebastian Glaser <anx@ulzq.de> (http://github.com/hakt0r/xumlib)",
   "name": "xumlib",
   "description": "small shell and network utility library",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/hakt0r/xumlib.git"
@@ -23,7 +23,7 @@
     "shell"
   ],
   "readmeFilename": "README.md",
-  "gitHead": "52f1f7e72bd6de29df7d768b539497ec5f20c889",
+  "gitHead": "96c3284ce68fee9651845b8f07a5c68c51308f14",
   "bugs": {
     "url": "https://github.com/hakt0r/xumlib/issues"
   },
