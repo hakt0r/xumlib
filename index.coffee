@@ -40,6 +40,8 @@ Lib.sh = sh = (cmd,args,callback) ->
 
 Lib.script = script = (cmd, callback) ->
   c = cp.spawn "sh", ["-c",cmd], encoding : 'utf8'
+  c.stdout.setEncoding 'utf8'
+  c.stderr.setEncoding 'utf8'
   if callback?
     c.buf = []
     c.stdout.on 'data', (d) -> c.buf.push(d)
@@ -53,6 +55,8 @@ Lib.script = script = (cmd, callback) ->
 Lib.scriptline = scriptline = (cmd, callback) ->
   callback = line : callback if typeof callback is 'function'
   c = cp.spawn "sh", [ "-c", cmd ], stdio : 'pipe', encoding : 'utf8'
+  c.stdout.setEncoding 'utf8'
+  c.stderr.setEncoding 'utf8'
   callback.error = console.log unless callback.error
   callback.line  = console.log unless callback.line
   callback.end   = (->) unless callback.end
@@ -215,6 +219,14 @@ Lib.guess_gw = guess_gw = (dev) ->
 
 Lib.devip = devip = (dev, callback) -> script """
   LANG=C ifconfig #{dev} | grep -o "inet addr:[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+"|cut -d : -f2""", (e,data) ->
+    callback data.trim()
+
+Lib.devgw = devgw = (dev, callback) -> script """
+  LANG=C ip route | grep default | grep #{dev} | grep -o "[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+" """, (e,data) ->
+    callback data.trim()
+
+Lib.devmask = devmask = (dev, callback) -> script """
+  LANG=C ifconfig #{dev} | grep -o "Mask:[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+"|cut -d : -f2""", (e,data) ->
     callback data.trim()
 
 Lib.devbcast = devbcast = (dev, callback) -> script """
