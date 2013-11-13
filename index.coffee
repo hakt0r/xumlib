@@ -217,6 +217,11 @@ Lib.guess_gw = guess_gw = (dev) ->
   console.log "guess".yellow, dev.dev.green, dev.gw.red
   return dev
 
+Lib.gwdev = gwdev = (callback) -> script """
+  LANG=C ip route | grep '^default'""", (e,data) ->
+    data = data.trim().split(' ')
+    callback data[2], data[4] 
+
 Lib.devip = devip = (dev, callback) -> script """
   LANG=C ifconfig #{dev} | grep -o "inet addr:[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+"|cut -d : -f2""", (e,data) ->
     callback data.trim()
