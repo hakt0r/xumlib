@@ -34,6 +34,58 @@ __env.LANG = 'C'
 
 module.exports = Lib = {}
 
+Lib.Xhell = new class Xhell
+  old_key  : null
+  old_mode : 'log'
+  linebuffer : ''
+  print : (args...) =>
+    @linebuffer += args.join ''
+    util.print.apply null, args
+  back : (howmany=1)=>
+    @linebuffer = @linebuffer.substr(0,-1)
+    util.print "\x1b[#{howmany}D"
+  reset  : =>
+    @linebuffer = ''; util.print "\x1b[0E\x1b[0J";
+  clear  : =>
+    @linebuffer = ''; util.print "\x1b[2J";
+  commit : =>
+    @linebuffer = ''; util.print '\n'
+  log : =>
+    util.print  "\x1b[0E\x1b[0J";
+    console.log.apply null, arguments
+    util.print  @linebuffer
+
+  constructor : ->
+    Lib.Xlyph = @Xlyph = class Xlyph
+      constructor : (@glyph) ->
+        @glyph = [ '|'.yellow, '/'.green, '-'.yellow, '\\'.green ] unless @glyph?
+        @index = @glyph.length - 1
+      last  :     => @glyph[@index]
+      next  :     => @glyph[(@index = (@index + 1) % (@glyph.length))]
+      show  : (i) => @glyph[(i % (@glyph.length))]
+
+    try Lib.Xync = @Xync = class Xync extends require('ync').Sync
+      constructor : (opts) ->
+        [ _run, _exec ] = [ @run, @exec ]
+        _widget = (fnc) => => @widget(); fnc.apply @, arguments
+        @run  = _widget _run
+        @exec = _widget _exec
+        super opts
+      widget : => console.log '[ ' + @title.yellow + ' ] ' + @current.yellow
+
+    Lib.Xcript = @Xcript = class Xcript
+      constructor : (cmd,opts={}) ->
+        { @end, @title, @subject } = opts
+        @subject = '' unless @subject?
+        @subject = @subject.blue
+        @title = @title.yellow
+        @end = (->) unless @end?
+        _data = (line) =>
+          line = line.trim()
+          return if line is ''
+          ultra.reset(); ultra.print '[ ' + @title + ' ' + '] ' + @subject + ' [ ' + line.substr(0,100) + ' ] '
+        shell.scriptline cmd, error : _data, line  : _data, end : ( => ultra.commit(); @end() )
+
 Lib.sh = sh = (cmd,args,callback) ->
   c = cp.spawn cmd, args, {encoding:'utf8'}
   c.on 'exit', callback
@@ -228,7 +280,10 @@ Lib.devip = devip = (dev, callback) -> script """
 
 Lib.devgw = devgw = (dev, callback) -> script """
   LANG=C ip route | grep default | grep #{dev} | grep -o "[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+" """, (e,data) ->
-    callback data.trim()
+    if data.trim() is '' then script """
+      LANG=C ifconfig #{dev} | grep -o "P-t-P:[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+"|cut -d : -f2""", (e,data) ->
+        callback data.trim()
+    else callback data.trim()
 
 Lib.devmask = devmask = (dev, callback) -> script """
   LANG=C ifconfig #{dev} | grep -o "Mask:[0-9]\\+.[0-9]\\+.[0-9]\\+.[0-9]\\+"|cut -d : -f2""", (e,data) ->
