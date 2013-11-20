@@ -52,7 +52,7 @@ Lib.Xhell = new class Xhell
     @linebuffer = ''; util.print '\n'
   log : =>
     util.print  "\x1b[0E\x1b[0J";
-    console.log.apply null, arguments
+    console.log.apply console, arguments
     util.print  @linebuffer
 
   constructor : ->
@@ -83,8 +83,8 @@ Lib.Xhell = new class Xhell
         _data = (line) =>
           line = line.trim()
           return if line is ''
-          ultra.reset(); ultra.print '[ ' + @title + ' ' + '] ' + @subject + ' [ ' + line.substr(0,100) + ' ] '
-        shell.scriptline cmd, error : _data, line  : _data, end : ( => ultra.commit(); @end() )
+          Lib.Xhell.reset(); Lib.Xhell.print '[ ' + @title + ' ' + '] ' + @subject + ' [ ' + line.substr(0,100) + ' ] '
+        Lib.scriptline cmd, error : _data, line  : _data, end : ( => Lib.Xhell.commit(); @end() )
 
 Lib.sh = sh = (cmd,args,callback) ->
   c = cp.spawn cmd, args, {encoding:'utf8'}
