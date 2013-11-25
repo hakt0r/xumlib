@@ -23,7 +23,14 @@
 
   http://www.gnu.org/licenses/gpl.html
 
+  NOTE: this is a mess due to the heavy influence the irac
+    project has had in the recent days.
+  Xhell and NodeSolve are to be unified with an ncurses
+    tiled-window kinda setup.
+
 ###
+
+String::times = (n) -> (@ for i in [0...n]).join ''
 
 cp       = require 'child_process'
 net      = require 'net'
@@ -34,7 +41,11 @@ __env.LANG = 'C'
 
 module.exports = Lib = {}
 
-Lib.Xhell = new class Xhell
+_log = console.log
+
+class XhellBase
+  Xyncs : []
+
   old_key  : null
   old_mode : 'log'
   linebuffer : ''
@@ -52,39 +63,96 @@ Lib.Xhell = new class Xhell
     @linebuffer = ''; util.print '\n'
   log : =>
     util.print  "\x1b[0E\x1b[0J";
-    console.log.apply console, arguments
+    _log.apply console, arguments
     util.print  @linebuffer
 
-  constructor : ->
+
+  constructor : (opts={}) ->
+    Xhell = @
+    @title = 'app' unless @title?
+
     Lib.Xlyph = @Xlyph = class Xlyph
       constructor : (@glyph) ->
         @glyph = [ '|'.yellow, '/'.green, '-'.yellow, '\\'.green ] unless @glyph?
         @index = @glyph.length - 1
-      last  :     => @glyph[@index]
-      next  :     => @glyph[(@index = (@index + 1) % (@glyph.length))]
+      last  : => @glyph[@index]
+      next  : => @glyph[(@index = (@index + 1) % (@glyph.length))]
       show  : (i) => @glyph[(i % (@glyph.length))]
 
-    try Lib.Xync = @Xync = class Xync extends require('ync').Sync
-      constructor : (opts) ->
-        [ _run, _exec ] = [ @run, @exec ]
-        _widget = (fnc) => => @widget(); fnc.apply @, arguments
-        @run  = _widget _run
-        @exec = _widget _exec
-        super opts
-      widget : => console.log '[ ' + @title.yellow + ' ] ' + @current.yellow
+    ync = require 'ync'
+    class NodeSolve
+      tree : []
+      constructor : ->
+        util.print "\x1b[2J"
+        @header()
+      header : (line='') ->
+        util.print "\x1b[0;0H\x1b[0K"
+        util.print "@[#{Xhell.title.yellow}]=[#{line}]"
+      update : (rel,line) ->
+        Lib.script """echo "#{line}" >> /tmp/iraclog"""
+        unless ( row = @tree.indexOf rel ) > -1
+          @tree.push rel
+          row = @tree.indexOf rel
+        line = "[#{row.toString().green}]" + line
+        row += 2
+        util.print "\x1b[#{row};0H\x1b[0K\x1b[#{row};0H#{line}"
+      log : (args...) => @header args.join ' ' 
+    
+    solve = new NodeSolve @title
+
+    console.log = solve.log
+    console.error = (args...) ->
+      solve.log.apply null, ['['+'err'.red+']'].concat args
+
+    Lib.Xync = class Xync extends ync.Sync
+      constructor : (o) ->
+        @title = 'sync'
+        super o
+        # e = @end; @end = => solve.tree = solve.tree.filter (i) => i unless i is @ 
+      exec : (a,b) =>
+        super a,b
+        solve.update @, @widget()
+      widget : (line='') =>
+        chain = Object.keys @chain
+        len = chain.length - 1
+        pos = chain.indexOf @current 
+        pos = (('-'.times pos).white + '#'.yellow + ('-'.times len-pos))
+        state = '[' + @title.blue + ":" + @current.yellow + ':' + pos + '] ' + line
+      log : (line) => solve.update @, @widget line
+
+    Lib.Xoin = class Xoin extends ync.Join
+      constructor : (a,b) ->
+        @title = 'join'
+        super a,b
+        solve.update @, @widget()
+      join : (a,b) =>
+        super a,b
+        solve.update @, @widget()
+      part : (a,b) =>
+        super a,b
+        solve.update @, @widget()
+      widget : (line='') =>
+        pos = '#'.yellow.times @count
+        state = '[' + @title.blue + ":" + pos.yellow + ':' + pos + '] ' + line
+      log : (line) => solve.update @, @widget line    
 
     Lib.Xcript = @Xcript = class Xcript
-      constructor : (cmd,opts={}) ->
+      constructor : (ync=null,cmd,opts={}) ->
+        if typeof ync is 'string'
+          opts = cmd; cmd = ync; ync = null
         { @end, @title, @subject } = opts
-        @subject = '' unless @subject?
-        @subject = @subject.blue
+        if ync? then @log = (args...) =>
+          ync.log.call null, '[' + @title.yellow + ":" + @subject.yellow + '] ' + (args.join ' ').substr(0,80)
+        @subject = '' unless @subject?; @subject = @subject.blue
         @title = @title.yellow
         @end = (->) unless @end?
         _data = (line) =>
           line = line.trim()
           return if line is ''
-          Lib.Xhell.reset(); Lib.Xhell.print '[ ' + @title + ' ' + '] ' + @subject + ' [ ' + line.substr(0,100) + ' ] '
-        Lib.scriptline cmd, error : _data, line  : _data, end : ( => Lib.Xhell.commit(); @end() )
+          @log line if @log?
+        Lib.scriptline cmd, error : _data, line  : _data, end : @end
+
+Lib.Xhell = Xhell = new XhellBase
 
 Lib.sh = sh = (cmd,args,callback) ->
   c = cp.spawn cmd, args, {encoding:'utf8'}

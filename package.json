@@ -2,7 +2,7 @@
   "author": "Sebastian Glaser <anx@ulzq.de> (http://github.com/hakt0r/xumlib)",
   "name": "xumlib",
   "description": "small shell and network utility library",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/hakt0r/xumlib.git"
@@ -16,6 +16,9 @@
   },
   "devDependencies": {
     "coffee-script": ">= 1.3"
+  },
+  "optionalDependencies": {
+    "ync": "~0.0.9"
   },
   "keywords": [
     "xumlib",
