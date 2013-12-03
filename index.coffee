@@ -32,9 +32,8 @@
 
 String::times = (n) -> (@ for i in [0...n]).join ''
 
-cp       = require 'child_process'
-net      = require 'net'
-util     = require 'util'
+cp = require 'child_process'
+util = require 'util'
 
 __env = process.env
 __env.LANG = 'C'
@@ -42,117 +41,29 @@ __env.LANG = 'C'
 module.exports = Lib = {}
 
 _log = console.log
+_linebuffer =  ''
 
-class XhellBase
-  Xyncs : []
+Lib.print = print = (args...) =>
+  _linebuffer += args.join ''
+  util.print.apply null, args
 
-  old_key  : null
-  old_mode : 'log'
-  linebuffer : ''
-  print : (args...) =>
-    @linebuffer += args.join ''
-    util.print.apply null, args
-  back : (howmany=1)=>
-    @linebuffer = @linebuffer.substr(0,-1)
-    util.print "\x1b[#{howmany}D"
-  reset  : =>
-    @linebuffer = ''; util.print "\x1b[0E\x1b[0J";
-  clear  : =>
-    @linebuffer = ''; util.print "\x1b[2J";
-  commit : =>
-    @linebuffer = ''; util.print '\n'
-  log : =>
-    util.print  "\x1b[0E\x1b[0J";
-    _log.apply console, arguments
-    util.print  @linebuffer
+Lib.back = back = (howmany=1)=>
+  _linebuffer = _linebuffer.substr(0,-1)
+  util.print "\x1b[#{howmany}D"
 
+Lib.reset = reset = =>
+  _linebuffer = ''; util.print "\x1b[0E\x1b[0J";
 
-  constructor : (opts={}) ->
-    Xhell = @
-    @title = 'app' unless @title?
+Lib.clear = clear = =>
+  _linebuffer = ''; util.print "\x1b[2J";
 
-    Lib.Xlyph = @Xlyph = class Xlyph
-      constructor : (@glyph) ->
-        @glyph = [ '|'.yellow, '/'.green, '-'.yellow, '\\'.green ] unless @glyph?
-        @index = @glyph.length - 1
-      last  : => @glyph[@index]
-      next  : => @glyph[(@index = (@index + 1) % (@glyph.length))]
-      show  : (i) => @glyph[(i % (@glyph.length))]
+Lib.commit = commit = =>
+  _linebuffer = ''; util.print '\n'
 
-    ync = require 'ync'
-    class NodeSolve
-      tree : []
-      constructor : ->
-        util.print "\x1b[2J"
-        @header()
-      header : (line='') ->
-        util.print "\x1b[0;0H\x1b[0K"
-        util.print "@[#{Xhell.title.yellow}]=[#{line}]"
-      update : (rel,line) ->
-        Lib.script """echo "#{line}" >> /tmp/iraclog"""
-        unless ( row = @tree.indexOf rel ) > -1
-          @tree.push rel
-          row = @tree.indexOf rel
-        line = "[#{row.toString().green}]" + line
-        row += 2
-        util.print "\x1b[#{row};0H\x1b[0K\x1b[#{row};0H#{line}"
-      log : (args...) => @header args.join ' ' 
-    
-    solve = new NodeSolve @title
-
-    console.log = solve.log
-    console.error = (args...) ->
-      solve.log.apply null, ['['+'err'.red+']'].concat args
-
-    Lib.Xync = class Xync extends ync.Sync
-      constructor : (o) ->
-        @title = 'sync'
-        super o
-        # e = @end; @end = => solve.tree = solve.tree.filter (i) => i unless i is @ 
-      exec : (a,b) =>
-        super a,b
-        solve.update @, @widget()
-      widget : (line='') =>
-        chain = Object.keys @chain
-        len = chain.length - 1
-        pos = chain.indexOf @current 
-        pos = (('-'.times pos).white + '#'.yellow + ('-'.times len-pos))
-        state = '[' + @title.blue + ":" + @current.yellow + ':' + pos + '] ' + line
-      log : (line) => solve.update @, @widget line
-
-    Lib.Xoin = class Xoin extends ync.Join
-      constructor : (a,b) ->
-        @title = 'join'
-        super a,b
-        solve.update @, @widget()
-      join : (a,b) =>
-        super a,b
-        solve.update @, @widget()
-      part : (a,b) =>
-        super a,b
-        solve.update @, @widget()
-      widget : (line='') =>
-        pos = '#'.yellow.times @count
-        state = '[' + @title.blue + ":" + pos.yellow + ':' + pos + '] ' + line
-      log : (line) => solve.update @, @widget line    
-
-    Lib.Xcript = @Xcript = class Xcript
-      constructor : (ync=null,cmd,opts={}) ->
-        if typeof ync is 'string'
-          opts = cmd; cmd = ync; ync = null
-        { @end, @title, @subject } = opts
-        if ync? then @log = (args...) =>
-          ync.log.call null, '[' + @title.yellow + ":" + @subject.yellow + '] ' + (args.join ' ').substr(0,80)
-        @subject = '' unless @subject?; @subject = @subject.blue
-        @title = @title.yellow
-        @end = (->) unless @end?
-        _data = (line) =>
-          line = line.trim()
-          return if line is ''
-          @log line if @log?
-        Lib.scriptline cmd, error : _data, line  : _data, end : @end
-
-Lib.Xhell = Xhell = new XhellBase
+Lib.log = log = =>
+  util.print  "\x1b[0E\x1b[0J";
+  _log.apply console, arguments
+  util.print  _linebuffer
 
 Lib.sh = sh = (cmd,args,callback) ->
   c = cp.spawn cmd, args, {encoding:'utf8'}
@@ -233,20 +144,6 @@ Lib.readproc = readproc = (opts) ->
     p.on 'exit', (status) -> handler.exit(status) unless error
   else if handler.exit? then p.on 'exit', handler.exit
   return p
-
-Lib.send = send = (msg,callback) ->
-  if msg? and typeof msg is "object"
-    ondone = msg.done if msg.done?
-    onerror = msg.error if msg.error?
-  if typeof callback is "function" then ondone = callback
-  ondone  = (->) unless ondone?
-  onerror = (->) unless onerror?
-  msg = JSON.stringify msg
-  client = net.connect {port: 8124}, -> client.write msg
-  client.on 'data', (data) ->
-    client.end()
-    ondone(data)
-  client.on 'error', onerror
 
 Lib.getmac = getmac = (l) ->
   r = l.match /[0-9a-fA-F:]+:[0-9a-fA-F:]+:[0-9a-fA-F:]+:[0-9a-fA-F:]+:[0-9a-fA-F:]+:[0-9a-fA-F:]+/
