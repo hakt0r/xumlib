@@ -1,17 +1,18 @@
-## xumlib - shell and network utility library
+# xumlib - shell and network utility library
+A small collection of functions I wrote for xum.
 
-### Installation
+## Installation
 ```
 sudo npm xumlib
 sudo npm install -g git://github.com/hakt0r/xumlib.git
 ```
 
-### Usage:
+## Usage:
 ```javascript
 var xl = require('xumlib');
 ```
 
-### Functions:
+## Functions:
 ```coffee
 sh : (cmd, args, callback) ->
 script : (cmd, callback) ->
@@ -42,10 +43,10 @@ devip : (dev, callback) ->
 devbcast : (dev, callback) ->
 ```
 
-### Copyrights
+## Copyrights
   * c) 2012-2013 Sebastian Glaser <anx@ulzq.de>
 
-### Licensed under GNU GPLv3
+## Licensed under GNU GPLv3
 
 xumlib is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
